@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page landing-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell compact-shell">
+    <header class="masthead narrow">
+      <div class="masthead-copy">
+        <p class="eyebrow">RampLink Lite</p>
+        <h1>Weather first.</h1>
+        <p class="lede">Pilots can search weather without logging in. Staff tools stay behind sign-in.</p>
+      </div>
+    </header>
+
+    <section class="panel panel-primary">
+      <div class="panel-head">
+        <div>
+          <h2>Public weather lookup</h2>
+          <p>Enter an ICAO code to view the latest saved report.</p>
+        </div>
+      </div>
+
+      <form method="get" action="{{ url_for('index') }}" class="search-row">
+        <label class="grow">
+          <span>ICAO</span>
+          <input type="text" name="icao" maxlength="8" placeholder="HKJK" value="{{ icao }}">
+        </label>
+        <button type="submit">Search</button>
+      </form>
+
+      {% if icao %}
+        <div class="result-grid home-result">
+          <article class="result-card">
+            <span class="result-label">METAR</span>
+            {% if weather %}
+              <p class="mono">{{ weather.metar }}</p>
+            {% else %}
+              <p class="empty-state">No weather stored for this ICAO.</p>
+            {% endif %}
+          </article>
+          <article class="result-card">
+            <span class="result-label">TAF</span>
+            {% if weather %}
+              <p class="mono">{{ weather.taf }}</p>
+            {% else %}
+              <p class="empty-state">No weather stored for this ICAO.</p>
+            {% endif %}
+          </article>
+        </div>
+        {% if weather %}
+          <p class="subtle mono">Updated by {{ weather.updated_by or "unknown" }} on {{ weather.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+        {% endif %}
+      {% endif %}
+    </section>
+
+    <section class="grid-split landing-grid">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Latest weather</h2>
+            <p>Most recent report stored in the system.</p>
+          </div>
+        </div>
+        {% if latest_weather %}
+          <div class="detail-block">
+            <div class="detail-kicker">{{ latest_weather.icao }}</div>
+            <p class="mono">{{ latest_weather.metar }}</p>
+            <p class="mono">{{ latest_weather.taf }}</p>
+            <p class="subtle mono">Updated by {{ latest_weather.updated_by or "unknown" }} on {{ latest_weather.updated_at.strftime("%Y-%m-%d %H:%M") }}</p>
+          </div>
+        {% else %}
+          <p class="empty-state">No weather has been stored yet.</p>
+        {% endif %}
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Staff login</h2>
+            <p>Protected dashboard for ATC, IOCC, and admin users.</p>
+          </div>
+        </div>
+        <p class="subtle">IOCC users update weather. Admin users can manage staff accounts.</p>
+        <a class="button-link" href="{{ url_for('login') }}">Sign in</a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

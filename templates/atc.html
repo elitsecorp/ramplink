@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite - ATC</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page atc-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">RampLink Lite / ATC</p>
+        <h1>Stand board</h1>
+        <p class="lede">Read-only live view for marshaller updates. The board refreshes every 5 seconds without changing ATC voice handling.</p>
+      </div>
+      <div class="metric-row">
+        <div class="metric">
+          <span>Free</span>
+          <strong>{{ counts.get('free', 0) }}</strong>
+        </div>
+        <div class="metric">
+          <span>Occupied</span>
+          <strong>{{ counts.get('occupied', 0) }}</strong>
+        </div>
+        <div class="metric">
+          <span>Blocked</span>
+          <strong>{{ counts.get('blocked', 0) }}</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Live stands</h2>
+          <p>Stand status, flight number, and last update time.</p>
+        </div>
+        <span class="pill">Auto refresh on</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Stand</th>
+              <th>Status</th>
+              <th>Flight</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stand in stands %}
+            <tr>
+              <td class="stand-id">{{ stand.id }}</td>
+              <td>
+                <span class="status-pill status-{{ stand.status }}">{{ stand.status }}</span>
+              </td>
+              <td class="mono">{{ stand.flight_number or "—" }}</td>
+              <td class="mono subtle">{{ stand.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    setTimeout(() => window.location.reload(), 5000);
+  </script>
+</body>
+</html>

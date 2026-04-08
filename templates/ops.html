@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite - Ops View</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page ops-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">RampLink Lite / Ops</p>
+        <h1>Read-only weather view</h1>
+        <p class="lede">Weather is public to everyone. Editing happens only in the protected IOCC dashboard.</p>
+      </div>
+      <div class="metric-row">
+        <div class="metric">
+          <span>Weather records</span>
+          <strong>{{ weather_list|length }}</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid-split">
+      <article class="panel panel-primary">
+        <div class="panel-head">
+          <div>
+            <h2>Latest weather</h2>
+            <p>Shows who updated the current report.</p>
+          </div>
+        </div>
+
+        {% if weather_list %}
+          {% set latest = weather_list[0] %}
+          <div class="detail-block">
+            <div class="detail-kicker">{{ latest.icao }}</div>
+            <p class="mono">{{ latest.metar }}</p>
+            <p class="mono">{{ latest.taf }}</p>
+            <p class="subtle mono">Updated by {{ latest.updated_by or "unknown" }} on {{ latest.updated_at.strftime("%Y-%m-%d %H:%M") }}</p>
+          </div>
+        {% else %}
+          <p class="empty-state">No weather has been stored yet.</p>
+        {% endif %}
+      </article>
+
+      <aside class="stack">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Stored weather</h2>
+              <p>Quick scan of saved reports.</p>
+            </div>
+          </div>
+          {% if weather_list %}
+            <div class="weather-list">
+              {% for item in weather_list %}
+                <article class="weather-item">
+                  <div class="weather-item-head">
+                    <strong>{{ item.icao }}</strong>
+                    <span class="subtle mono">{{ item.updated_at.strftime("%Y-%m-%d %H:%M") }}</span>
+                  </div>
+                  <p class="mono snippet">{{ item.metar }}</p>
+                  <p class="mono snippet">{{ item.taf }}</p>
+                  <p class="subtle mono">Updated by {{ item.updated_by or "unknown" }}</p>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="subtle">No records to display.</p>
+          {% endif %}
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Protected editing</h2>
+              <p>To update weather, sign in through the dashboard.</p>
+            </div>
+          </div>
+          <a class="button-link" href="{{ url_for('login') }}">Go to login</a>
+        </article>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

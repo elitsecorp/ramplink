@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page dashboard-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">RampLink Lite / Protected</p>
+        <h1>{{ user.role|capitalize }} dashboard</h1>
+        <p class="lede">
+          Signed in as <span class="mono">{{ user.username }}</span>.
+          {% if show_weather_editor %}
+            Weather editing is available here.
+          {% elif show_stands %}
+            Stand assignments are visible for ATC users only.
+          {% else %}
+            This account has limited access to the staff dashboard.
+          {% endif %}
+        </p>
+      </div>
+      <div class="metric-row">
+        <div class="metric">
+          <span>Free</span>
+          <strong>{{ counts.get('free', 0) }}</strong>
+        </div>
+        <div class="metric">
+          <span>Occupied</span>
+          <strong>{{ counts.get('occupied', 0) }}</strong>
+        </div>
+        <div class="metric">
+          <span>Blocked</span>
+          <strong>{{ counts.get('blocked', 0) }}</strong>
+        </div>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-list">
+          {% for message in messages %}
+            <div class="flash">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="grid-split">
+      {% if show_stands %}
+      <article class="panel panel-primary">
+        <div class="panel-head">
+          <div>
+            <h2>Stand board</h2>
+            <p>Read-only stand assignments for operational awareness.</p>
+          </div>
+          <span class="pill">Live data</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table dashboard-table">
+            <thead>
+              <tr>
+                <th>Stand</th>
+                <th>Status</th>
+                <th>Flight</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stand in stands[:12] %}
+              <tr>
+                <td class="stand-id">{{ stand.id }}</td>
+                <td><span class="status-pill status-{{ stand.status }}">{{ stand.status }}</span></td>
+                <td class="mono">{{ stand.flight_number or "-" }}</td>
+                <td class="mono subtle">{{ stand.updated_at.strftime("%Y-%m-%d %H:%M") }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+      {% endif %}
+
+      <aside class="stack">
+        {% if show_weather_editor %}
+        <article class="panel panel-soft">
+          <div class="panel-head">
+            <div>
+              <h2>Update weather</h2>
+              <p>Submit METAR and TAF. The record stores who updated it.</p>
+            </div>
+          </div>
+
+          <form method="post" action="{{ url_for('weather_update') }}" class="form-stack">
+            <label>
+              <span>ICAO</span>
+              <input type="text" name="icao" maxlength="8" placeholder="HKJK" required>
+            </label>
+            <label>
+              <span>METAR</span>
+              <textarea name="metar" rows="4" placeholder="HKJK 081000Z 18010KT 9999 FEW020 25/12 Q1015" required></textarea>
+            </label>
+            <label>
+              <span>TAF</span>
+              <textarea name="taf" rows="4" placeholder="TAF HKJK 081000Z 0812/0912 18010KT CAVOK" required></textarea>
+            </label>
+            <button type="submit">Save weather</button>
+          </form>
+        </article>
+        {% endif %}
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Latest weather</h2>
+              <p>Stored reports and the staff member who edited them.</p>
+            </div>
+          </div>
+          {% if latest_weather %}
+            <div class="detail-block">
+              <div class="detail-kicker">{{ latest_weather.icao }}</div>
+              <p class="mono">{{ latest_weather.metar }}</p>
+              <p class="mono">{{ latest_weather.taf }}</p>
+              <p class="subtle mono">Updated by {{ latest_weather.updated_by or "unknown" }} on {{ latest_weather.updated_at.strftime("%Y-%m-%d %H:%M") }}</p>
+            </div>
+          {% else %}
+            <p class="empty-state">No weather has been stored yet.</p>
+          {% endif %}
+        </article>
+
+        {% if show_admin %}
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Admin panel</h2>
+              <p>Create ATC, IOCC, and marshaller accounts.</p>
+            </div>
+          </div>
+
+          <form method="post" action="{{ url_for('create_user') }}" class="form-stack">
+            <label>
+              <span>Username</span>
+              <input type="text" name="username" autocomplete="off" required>
+            </label>
+            <label>
+              <span>Password</span>
+              <input type="password" name="password" required>
+            </label>
+            <label>
+              <span>Role</span>
+              <select name="role" required>
+                <option value="atc">ATC</option>
+                <option value="iocc">IOCC</option>
+                <option value="marshaller">Marshaller</option>
+              </select>
+            </label>
+            <button type="submit">Create user</button>
+          </form>
+
+          <div class="user-list">
+            {% for entry in users %}
+              <div class="user-row">
+                <strong>{{ entry.username }}</strong>
+                <span class="pill">{{ entry.role }}</span>
+                <span class="subtle">{% if entry.active %}active{% else %}inactive{% endif %}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </article>
+        {% endif %}
+      </aside>
+    </section>
+
+    <section class="panel footer-actions">
+      <div>
+        <h2>Session</h2>
+        <p>Logged in as <span class="mono">{{ user.username }}</span>.</p>
+      </div>
+      <a class="button-link" href="{{ url_for('logout') }}">Log out</a>
+    </section>
+  </main>
+</body>
+</html>

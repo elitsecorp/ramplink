@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite - Weather</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page weather-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell compact-shell">
+    <header class="masthead narrow">
+      <div class="masthead-copy">
+        <p class="eyebrow">RampLink Lite / Pilot</p>
+        <h1>Weather lookup</h1>
+        <p class="lede">Search by ICAO to see the latest stored METAR and TAF without needing a login.</p>
+      </div>
+    </header>
+
+    <section class="panel panel-primary">
+      <form method="get" action="{{ url_for('pilot_weather') }}" class="search-row">
+        <label class="grow">
+          <span>ICAO</span>
+          <input type="text" name="icao" maxlength="8" placeholder="HKJK" value="{{ icao }}">
+        </label>
+        <button type="submit">Get weather</button>
+      </form>
+    </section>
+
+    {% if icao %}
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Results for {{ icao }}</h2>
+          <p>Latest saved weather report.</p>
+        </div>
+      </div>
+
+      {% if weather %}
+        <div class="result-grid">
+          <article class="result-card">
+            <span class="result-label">METAR</span>
+            <p class="mono">{{ weather.metar }}</p>
+          </article>
+          <article class="result-card">
+            <span class="result-label">TAF</span>
+            <p class="mono">{{ weather.taf }}</p>
+          </article>
+        </div>
+        <p class="subtle mono">Updated by {{ weather.updated_by or "unknown" }} on {{ weather.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+      {% else %}
+        <p class="empty-state">No weather stored for this ICAO.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>

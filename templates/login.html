@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampLink Lite - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-page auth-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <main class="app-shell auth-shell">
+    <section class="panel panel-primary auth-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">RampLink Lite / Staff</p>
+          <h1>Sign in</h1>
+          <p class="lede">Use your staff username and password to open the protected dashboard.</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-list">
+            {% for message in messages %}
+              <div class="flash">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" class="form-stack">
+        <label>
+          <span>Username</span>
+          <input type="text" name="username" autocomplete="username" required>
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Enter dashboard</button>
+      </form>
+
+      <p class="subtle small-note">Default accounts on first run: <span class="mono">admin / admin123</span>, <span class="mono">atc / atc123</span>, <span class="mono">iocc / iocc123</span>.</p>
+      <p class="small-note"><a href="{{ url_for('index') }}">Back to home</a></p>
+    </section>
+  </main>
+</body>
+</html>
