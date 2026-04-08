@@ -115,6 +115,9 @@ After deployment:
 - Open `/` or `/weather` for public weather lookup
 
 If the bot still looks idle, check Railway logs for `Telegram webhook configured` or `Failed to configure Telegram webhook`. The most common causes are a wrong `PUBLIC_BASE_URL`, a mismatched `ALLOWED_TELEGRAM_USER_IDS`, or an invalid bot token.
+The bot now sends a Telegram reply after each message so you can confirm whether it was accepted or ignored.
+
+If it says it ignored the message, the sender's numeric Telegram user ID is not in `ALLOWED_TELEGRAM_USER_IDS`.
 
 If you want to keep using SQLite instead of Postgres, you will need a persistent Railway volume. Postgres is the safer Railway choice.
 

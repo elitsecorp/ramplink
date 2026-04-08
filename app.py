@@ -201,7 +201,19 @@ def create_app() -> Flask:
         telegram_bot = app.extensions["telegram_bot"]
         update = Update.de_json(payload, telegram_bot)
         result = process_telegram_update(update, app.config["ALLOWED_TELEGRAM_USER_IDS"])
-        return jsonify({"ok": True, "processed": result})
+
+        chat_id = update.effective_chat.id if update.effective_chat else None
+        if chat_id is not None:
+            if result["authorized"]:
+                ack_text = f"RampLink Lite updated {result['processed']} stand(s)."
+            else:
+                ack_text = "RampLink Lite ignored this message."
+            try:
+                asyncio.run(telegram_bot.send_message(chat_id=chat_id, text=ack_text))
+            except Exception:
+                app.logger.exception("Failed to send Telegram acknowledgement")
+
+        return jsonify({"ok": True, **result})
 
     @app.route("/stands", methods=["GET"])
     @login_required
