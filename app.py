@@ -207,7 +207,10 @@ def create_app() -> Flask:
             if result["authorized"]:
                 ack_text = f"RampLink Lite updated {result['processed']} stand(s)."
             else:
-                ack_text = "RampLink Lite ignored this message."
+                ack_text = (
+                    "RampLink Lite ignored this message. "
+                    f"Your Telegram user ID is {result.get('sender_id')}."
+                )
             try:
                 asyncio.run(telegram_bot.send_message(chat_id=chat_id, text=ack_text))
             except Exception:

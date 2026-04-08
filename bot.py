@@ -45,10 +45,22 @@ def process_telegram_update(update: Update, allowed_ids):
     message = update.effective_message
 
     if not user or not message or not message.text:
-        return {"processed": 0, "authorized": False, "reason": "missing message"}
+        return {
+            "processed": 0,
+            "authorized": False,
+            "reason": "missing message",
+            "sender_id": user.id if user else None,
+            "sender_name": user.full_name if user else None,
+        }
 
     if user.id not in allowed_ids:
-        return {"processed": 0, "authorized": False, "reason": "unauthorized"}
+        return {
+            "processed": 0,
+            "authorized": False,
+            "reason": "unauthorized",
+            "sender_id": user.id,
+            "sender_name": user.full_name,
+        }
 
     parsed_lines = parse_stand_message(message.text)
     for entry in parsed_lines:
@@ -62,4 +74,10 @@ def process_telegram_update(update: Update, allowed_ids):
         stand.updated_at = datetime.utcnow()
 
     db.session.commit()
-    return {"processed": len(parsed_lines), "authorized": True, "reason": "ok"}
+    return {
+        "processed": len(parsed_lines),
+        "authorized": True,
+        "reason": "ok",
+        "sender_id": user.id,
+        "sender_name": user.full_name,
+    }
