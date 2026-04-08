@@ -1,4 +1,5 @@
 import os
+import asyncio
 from collections import Counter
 from datetime import datetime
 from functools import wraps
@@ -69,6 +70,7 @@ def create_app() -> Flask:
         seed_user(app.config["IOCC_USERNAME"], app.config["IOCC_PASSWORD"], "iocc")
 
     app.extensions["telegram_bot"] = Bot(TELEGRAM_BOT_TOKEN)
+    configure_telegram_webhook(app)
 
     @app.before_request
     def load_current_user():
@@ -96,6 +98,10 @@ def create_app() -> Flask:
     @app.route("/favicon.ico")
     def favicon():
         return ("", 204)
+
+    @app.route("/healthz")
+    def healthz():
+        return jsonify({"ok": True})
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -343,6 +349,33 @@ def ensure_schema():
         if "updated_by" not in weather_columns:
             with db.engine.begin() as connection:
                 connection.execute(text("ALTER TABLE weather ADD COLUMN updated_by VARCHAR(80)"))
+
+
+def configure_telegram_webhook(app: Flask):
+    public_base_url = (
+        os.getenv("PUBLIC_BASE_URL")
+        or os.getenv("RAILWAY_PUBLIC_DOMAIN")
+        or os.getenv("RAILWAY_STATIC_URL")
+        or ""
+    ).strip()
+    if not public_base_url:
+        app.logger.info("Telegram webhook not configured: PUBLIC_BASE_URL not set")
+        return
+
+    if not public_base_url.startswith("http://") and not public_base_url.startswith("https://"):
+        public_base_url = f"https://{public_base_url}"
+
+    webhook_url = f"{public_base_url.rstrip('/')}/telegram/webhook"
+
+    async def _set_webhook():
+        bot = app.extensions["telegram_bot"]
+        await bot.set_webhook(url=webhook_url)
+
+    try:
+        asyncio.run(_set_webhook())
+        app.logger.info("Telegram webhook configured: %s", webhook_url)
+    except Exception as exc:
+        app.logger.exception("Failed to configure Telegram webhook: %s", exc)
 
 
 app = create_app()

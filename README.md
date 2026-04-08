@@ -95,6 +95,7 @@ The app uses a SQLite database stored at `database.db` in the project root.
 ```text
 SECRET_KEY=your-long-random-secret
 TELEGRAM_BOT_TOKEN=your-bot-token
+PUBLIC_BASE_URL=https://<your-app>.up.railway.app
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=choose-a-strong-password
 ATC_USERNAME=atc
@@ -106,12 +107,14 @@ ALLOWED_TELEGRAM_USER_IDS=123456789
 
 5. Railway will supply `PORT` automatically. The app and `Procfile` already use it.
 6. Railway will also supply `DATABASE_URL` from the Postgres plugin. The app uses it automatically.
-7. Deploy the service.
+7. Set `PUBLIC_BASE_URL` to your Railway app URL so the bot can register its webhook on startup.
+8. Deploy the service.
 
 After deployment:
-- Set the Telegram webhook to your Railway service URL: `https://<your-app>.up.railway.app/telegram/webhook`
 - Open `/login` for staff access
 - Open `/` or `/weather` for public weather lookup
+
+If the bot still looks idle, check Railway logs for `Telegram webhook configured` or `Failed to configure Telegram webhook`. The most common causes are a wrong `PUBLIC_BASE_URL`, a mismatched `ALLOWED_TELEGRAM_USER_IDS`, or an invalid bot token.
 
 If you want to keep using SQLite instead of Postgres, you will need a persistent Railway volume. Postgres is the safer Railway choice.
 
